@@ -171,7 +171,17 @@ class RecommendationExplainer:
         with open(model_dir / "model_metadata.json") as f:
             self.metadata = json.load(f)
 
-        with open(model_dir.parent / "data" / "product_info.json") as f:
+        product_info_candidates = [
+            model_dir.parent / "data" / "product_info.json",  # repo-root layout
+            model_dir.parent / "backend" / "data" / "product_info.json",  # repo-root with backend/data
+            Path(__file__).resolve().parent / "data" / "product_info.json",  # backend-root deployment
+        ]
+
+        product_info_path = next((p for p in product_info_candidates if p.exists()), None)
+        if product_info_path is None:
+            raise FileNotFoundError("Could not find product_info.json in expected locations.")
+
+        with open(product_info_path, encoding="utf-8") as f:
             self.product_info = json.load(f)
 
         self.feature_cols = self.metadata["feature_columns"]
