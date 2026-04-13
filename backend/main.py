@@ -13,11 +13,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pathlib import Path
 
-from backend.explainability import RecommendationExplainer
+try:
+    # Works when launched as `uvicorn backend.main:app` from repo root.
+    from backend.explainability import RecommendationExplainer
+except ModuleNotFoundError:
+    # Works when Vercel project root is `backend/` and modules are top-level.
+    from explainability import RecommendationExplainer
 
 # -- Init ---------------------------------------------------------------------
 
-MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_DIR = (BASE_DIR / "models") if (BASE_DIR / "models").exists() else (BASE_DIR.parent / "models")
 explainer = None
 explainer_init_error = None
 
