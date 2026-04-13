@@ -1,0 +1,82 @@
+{
+  "gcash_gsave": {
+    "provider": "GCash",
+    "name": "GSave (CIMB)",
+    "interest": "2.6% p.a.",
+    "min_balance": 0,
+    "type": "Digital Savings",
+    "risk": "Low",
+    "liquidity": "High",
+    "requires_bank": false
+  },
+  "gcash_ginvest": {
+    "provider": "GCash",
+    "name": "GInvest (UITFs)",
+    "interest": "Variable (market-dependent)",
+    "min_balance": 50,
+    "type": "Investment",
+    "risk": "Medium-High",
+    "liquidity": "Medium",
+    "requires_bank": false
+  },
+  "bpi_savings": {
+    "provider": "BPI",
+    "name": "BPI Regular Savings",
+    "interest": "0.0925% p.a.",
+    "min_balance": 3000,
+    "type": "Traditional Savings",
+    "risk": "Low",
+    "liquidity": "High",
+    "requires_bank": true
+  },
+  "bpi_save_up": {
+    "provider": "BPI",
+    "name": "BPI #SaveUp",
+    "interest": "0.0925% p.a.",
+    "min_balance": 0,
+    "type": "Digital Auto-Save",
+    "risk": "Low",
+    "liquidity": "High",
+    "requires_bank": true
+  },
+  "bpi_time_deposit": {
+    "provider": "BPI",
+    "name": "BPI Plan Ahead Time Deposit",
+    "interest": "~3-5% p.a. (fixed)",
+    "min_balance": 50000,
+    "type": "Time Deposit",
+    "risk": "Low",
+    "liquidity": "Low (5-year lock)",
+    "requires_bank": true
+  },
+  "maya_savings": {
+    "provider": "Maya",
+    "name": "Maya Savings",
+    "interest": "3.0% base, up to 15% boosted",
+    "min_balance": 0,
+    "type": "Digital Savings",
+    "risk": "Low",
+    "liquidity": "High",
+    "requires_bank": false
+  },
+  "maya_personal_goals": {
+    "provider": "Maya",
+    "name": "Maya Personal Goals",
+    "interest": "4-8% tiered p.a.",
+    "min_balance": 0,
+    "type": "Goal-Based Savings",
+    "risk": "Low",
+    "liquidity": "High",
+    "requires_bank": false
+  },
+  "maya_time_deposit": {
+    "provider": "Maya",
+    "name": "Maya Time Deposit Plus",
+    "interest": "5.25-5.75% p.a.",
+    "min_balance": 0,
+    "type": "Digital Time Deposit",
+    "risk": "Low",
+    "liquidity": "Low (3-12mo lock)",
+    "requires_bank": false
+  }
+}

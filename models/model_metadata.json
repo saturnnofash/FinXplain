@@ -1,0 +1,68 @@
+{
+  "feature_columns": [
+    "age",
+    "monthly_income",
+    "monthly_expenses",
+    "existing_savings",
+    "employment_status",
+    "num_dependents",
+    "location_type",
+    "digital_savviness",
+    "has_bank_account",
+    "has_ewallet",
+    "savings_goal",
+    "risk_tolerance",
+    "investment_horizon",
+    "disposable_income",
+    "expense_ratio",
+    "savings_to_income_ratio",
+    "income_per_dependent"
+  ],
+  "categorical_columns": [
+    "employment_status",
+    "location_type",
+    "savings_goal",
+    "risk_tolerance",
+    "investment_horizon"
+  ],
+  "numerical_columns": [
+    "age",
+    "monthly_income",
+    "monthly_expenses",
+    "existing_savings",
+    "num_dependents",
+    "digital_savviness",
+    "has_bank_account",
+    "has_ewallet",
+    "disposable_income",
+    "expense_ratio",
+    "savings_to_income_ratio",
+    "income_per_dependent"
+  ],
+  "target_classes": [
+    "bpi_save_up",
+    "bpi_savings",
+    "bpi_time_deposit",
+    "gcash_ginvest",
+    "gcash_gsave",
+    "maya_personal_goals",
+    "maya_savings",
+    "maya_time_deposit"
+  ],
+  "n_features": 17,
+  "n_classes": 8,
+  "metrics": {
+    "accuracy": 0.654,
+    "precision": 0.6298,
+    "recall": 0.654,
+    "f1": 0.6088,
+    "auc_roc": 0.9114
+  },
+  "cv_scores": [
+    0.644,
+    0.639,
+    0.632,
+    0.626,
+    0.639
+  ]
+}
