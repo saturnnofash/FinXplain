@@ -1,7 +1,9 @@
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000";
+
 export async function POST(req: Request) {
   const body = await req.json();
   try {
-    const res = await fetch("http://127.0.0.1:8000/recommend", {
+    const res = await fetch(`${BACKEND_URL}/recommend`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
