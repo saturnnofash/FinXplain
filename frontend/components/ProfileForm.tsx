@@ -68,13 +68,44 @@ const savvinessLabels: Record<number, string> = {
 /* ─── Reusable helpers ─── */
 
 function TooltipIcon({ text }: { text: string }) {
+  const [open, setOpen] = React.useState(false)
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false)
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)")
+    const updateTouchMode = () => setIsTouchDevice(mediaQuery.matches)
+    updateTouchMode()
+    mediaQuery.addEventListener("change", updateTouchMode)
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateTouchMode)
+    }
+  }, [])
+
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip
+        open={isTouchDevice ? open : undefined}
+        onOpenChange={isTouchDevice ? setOpen : undefined}
+      >
         <TooltipTrigger asChild>
-          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+          <button
+            type="button"
+            aria-label="Show field help"
+            onClick={
+              isTouchDevice
+                ? () => setOpen((prev) => !prev)
+                : undefined
+            }
+            className="inline-flex items-center justify-center rounded-full cursor-pointer text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
+            <Info className="h-3.5 w-3.5" />
+          </button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent
+          sideOffset={6}
+          onPointerDownOutside={() => isTouchDevice && setOpen(false)}
+        >
           <p>{text}</p>
         </TooltipContent>
       </Tooltip>
