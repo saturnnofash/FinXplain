@@ -18,7 +18,14 @@ from backend.explainability import RecommendationExplainer
 # -- Init ---------------------------------------------------------------------
 
 MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
-explainer = RecommendationExplainer(str(MODEL_DIR))
+explainer = None
+explainer_init_error = None
+
+try:
+    explainer = RecommendationExplainer(str(MODEL_DIR))
+except Exception as e:
+    # Keep API bootable even if model artifacts are missing in deployment.
+    explainer_init_error = str(e)
 
 app = FastAPI(
     title="PH Fintech Recommender",
@@ -85,6 +92,14 @@ def root():
 
 @app.get("/health")
 def health():
+    if explainer is None:
+        return {
+            "status": "degraded",
+            "model_loaded": False,
+            "classes": [],
+            "detail": explainer_init_error or "Model is not loaded.",
+        }
+
     return {
         "status": "ok",
         "model_loaded": explainer.model is not None,
@@ -100,6 +115,12 @@ def recommend(user_input: UserInput):
     Returns prediction, feature contributions, human-readable explanation,
     and counterfactual suggestions -- all in one JSON response.
     """
+    if explainer is None:
+        raise HTTPException(
+            status_code=503,
+            detail=explainer_init_error or "Model is not loaded.",
+        )
+
     try:
         result = explainer.explain(user_input.model_dump())
         return result
