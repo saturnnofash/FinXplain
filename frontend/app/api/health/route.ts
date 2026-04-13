@@ -1,0 +1,9 @@
+export async function GET() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/health");
+    const data = await res.json();
+    return Response.json(data);
+  } catch {
+    return Response.json({ status: "unreachable" }, { status: 503 });
+  }
+}
