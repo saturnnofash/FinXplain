@@ -1,10 +1,7 @@
+# Runtime-only dependencies for Vercel deployment
+fastapi
+joblib
 numpy
 pandas
 scikit-learn
-xgboost
-interpret
-shap
-lime
-fastapi
-uvicorn
-joblib
+interpret-core
