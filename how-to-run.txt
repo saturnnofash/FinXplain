@@ -11,3 +11,5 @@ python -m uvicorn backend.main:app --reload --port 8000
 # run frontend
 cd frontend
 npm run dev
+
+Visit: https://finxplain-rho.vercel.app/ to access the prototype
