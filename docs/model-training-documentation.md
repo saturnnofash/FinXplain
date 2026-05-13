@@ -3,7 +3,7 @@
 | Field       | Detail                                              |
 |-------------|-----------------------------------------------------|
 | **Title**   | Model Training, Evaluation, and Explainability Documentation |
-| **Author**  | System Generated                                    |
+| **Author**  | ashton                   |
 | **Date**    | April 2025                                          |
 | **Version** | 1.0                                                 |
 | **Project** | FinXplain — Philippine Fintech AI Recommender System |

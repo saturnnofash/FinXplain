@@ -57,11 +57,14 @@ class UserInput(BaseModel):
     monthly_expenses: float = Field(..., ge=0, description="Monthly expenses in PHP")
     existing_savings: float = Field(..., ge=0, description="Current savings in PHP")
     employment_status: str = Field(..., description="Employed | Self-employed | Freelancer | Student | Unemployed")
+    education: str = Field(..., description="Elementary | High School | Vocational | College | Graduate")
     num_dependents: int = Field(..., ge=0, le=10, description="Number of dependents")
     location_type: str = Field(..., description="Metro Manila | Urban | Rural")
     digital_savviness: int = Field(..., ge=1, le=5, description="Digital comfort (1-5)")
     has_bank_account: int = Field(..., ge=0, le=1, description="0 or 1")
     has_ewallet: int = Field(..., ge=0, le=1, description="0 or 1")
+    primary_ewallet: str = Field(..., description="GCash | Maya | Both | Neither")
+    receives_remittance: int = Field(..., ge=0, le=1, description="Receives OFW remittance: 0 or 1")
     savings_goal: str = Field(..., description="Emergency Fund | Education | Retirement | Travel | Home/Property | General Savings | Business Capital")
     risk_tolerance: str = Field(..., description="Conservative | Moderate | Aggressive")
     investment_horizon: str = Field(..., description="Short-term | Medium-term | Long-term")
@@ -75,11 +78,14 @@ class UserInput(BaseModel):
                     "monthly_expenses": 22000,
                     "existing_savings": 80000,
                     "employment_status": "Employed",
+                    "education": "College",
                     "num_dependents": 0,
                     "location_type": "Metro Manila",
                     "digital_savviness": 4,
                     "has_bank_account": 1,
                     "has_ewallet": 1,
+                    "primary_ewallet": "GCash",
+                    "receives_remittance": 0,
                     "savings_goal": "Retirement",
                     "risk_tolerance": "Moderate",
                     "investment_horizon": "Long-term",

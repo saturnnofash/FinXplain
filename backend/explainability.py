@@ -26,9 +26,11 @@ from pathlib import Path
 
 # Features the user can realistically change → valid for counterfactuals
 CONTROLLABLE_NUM = ["existing_savings", "monthly_income", "monthly_expenses"]
-CONTROLLABLE_CAT = ["risk_tolerance", "investment_horizon", "savings_goal"]
+CONTROLLABLE_CAT = ["risk_tolerance", "investment_horizon", "savings_goal", "primary_ewallet"]
 
-# Valid category values (used in counterfactual search)
+# Valid category values (used in counterfactual search). Education and
+# receives_remittance are intentionally excluded from counterfactuals because
+# users cannot realistically change them on the timescale of a recommendation.
 VALID_CATEGORIES = {
     "savings_goal": [
         "Emergency Fund", "Education", "Retirement",
@@ -36,6 +38,7 @@ VALID_CATEGORIES = {
     ],
     "risk_tolerance": ["Conservative", "Moderate", "Aggressive"],
     "investment_horizon": ["Short-term", "Medium-term", "Long-term"],
+    "primary_ewallet": ["GCash", "Maya", "Both", "Neither"],
 }
 
 # Human-friendly labels for features shown on the frontend
@@ -45,11 +48,14 @@ FEATURE_LABELS = {
     "monthly_expenses":        "Monthly Expenses",
     "existing_savings":        "Existing Savings",
     "employment_status":       "Employment Status",
+    "education":               "Educational Attainment",
     "num_dependents":          "Number of Dependents",
     "location_type":           "Location",
     "digital_savviness":       "Digital Comfort",
     "has_bank_account":        "Has Bank Account",
     "has_ewallet":             "Has E-Wallet",
+    "primary_ewallet":         "Primary E-Wallet",
+    "receives_remittance":     "Receives OFW Remittance",
     "savings_goal":            "Savings Goal",
     "risk_tolerance":          "Risk Tolerance",
     "investment_horizon":      "Investment Horizon",
@@ -83,6 +89,11 @@ def _describe_feature(name: str, value) -> str:
         "monthly_expenses":        lambda v: f"your monthly expenses of PHP {float(v):,.0f}",
         "existing_savings":        lambda v: f"your existing savings of PHP {float(v):,.0f}",
         "employment_status":       lambda v: f"being {v}",
+        "education":               lambda v: (
+            f"having a {v.lower()} education" if v in ("Vocational", "Graduate")
+            else f"being a college graduate" if v == "College"
+            else f"having {v.lower()} as your highest level of education"
+        ),
         "num_dependents":          lambda v: f"having {int(float(v))} dependent{'s' if int(float(v)) != 1 else ''}",
         "location_type":           lambda v: (
             "living in Metro Manila" if v == "Metro Manila"
@@ -92,6 +103,15 @@ def _describe_feature(name: str, value) -> str:
         "digital_savviness":       lambda v: f"your digital comfort level of {int(float(v))}/5",
         "has_bank_account":        lambda v: "having a bank account" if int(float(v)) else "not having a bank account",
         "has_ewallet":             lambda v: "having an e-wallet" if int(float(v)) else "not having an e-wallet",
+        "primary_ewallet":         lambda v: (
+            f"using {v} as your primary e-wallet" if v in ("GCash", "Maya")
+            else "using both GCash and Maya regularly" if v == "Both"
+            else "not using any e-wallet"
+        ),
+        "receives_remittance":     lambda v: (
+            "receiving OFW remittance" if int(float(v))
+            else "not receiving OFW remittance"
+        ),
         "savings_goal":            lambda v: f"your savings goal of {v}",
         "risk_tolerance":          lambda v: f"your {v.lower()} risk tolerance",
         "investment_horizon":      lambda v: f"your {v.lower()} investment horizon",
@@ -143,6 +163,14 @@ def _build_counterfactual_sentence(feature, old_val, new_val, product_name) -> s
             f"If your primary savings goal were '{new_val}' instead of '{old_val}', "
             f"{product_name} would be recommended."
         )
+    if feature == "primary_ewallet":
+        if new_val == "Both":
+            phrase = "used both GCash and Maya regularly"
+        elif new_val == "Neither":
+            phrase = "did not use an e-wallet"
+        else:
+            phrase = f"used {new_val} as your primary e-wallet"
+        return f"If you {phrase}, {product_name} would be a better fit."
     return (
         f"Changing your {FEATURE_LABELS.get(feature, feature).lower()} to {new_val} "
         f"would lead to {product_name} being recommended."
@@ -196,8 +224,9 @@ class RecommendationExplainer:
         """Build a model-ready single-row DataFrame from raw user input."""
         row = {col: raw[col] for col in [
             "age", "monthly_income", "monthly_expenses", "existing_savings",
-            "employment_status", "num_dependents", "location_type",
+            "employment_status", "education", "num_dependents", "location_type",
             "digital_savviness", "has_bank_account", "has_ewallet",
+            "primary_ewallet", "receives_remittance",
             "savings_goal", "risk_tolerance", "investment_horizon",
         ]}
 

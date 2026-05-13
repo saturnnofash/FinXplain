@@ -9,11 +9,19 @@ export interface RecommendRequest {
     | "Freelancer"
     | "Student"
     | "Unemployed";
+  education:
+    | "Elementary"
+    | "High School"
+    | "Vocational"
+    | "College"
+    | "Graduate";
   num_dependents: number;
   location_type: "Metro Manila" | "Urban" | "Rural";
   digital_savviness: number;
   has_bank_account: 0 | 1;
   has_ewallet: 0 | 1;
+  primary_ewallet: "GCash" | "Maya" | "Both" | "Neither";
+  receives_remittance: 0 | 1;
   savings_goal:
     | "Emergency Fund"
     | "Education"

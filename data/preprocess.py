@@ -21,20 +21,23 @@ CLEAN_PATH = PROJECT_ROOT / "data" / "clean_data.csv"
 
 EXPECTED_COLUMNS = [
     "age", "monthly_income", "monthly_expenses", "existing_savings",
-    "employment_status", "num_dependents", "location_type",
+    "employment_status", "education", "num_dependents", "location_type",
     "digital_savviness", "has_bank_account", "has_ewallet",
+    "primary_ewallet", "receives_remittance",
     "savings_goal", "risk_tolerance", "investment_horizon",
     "recommended_product",
 ]
 
 CATEGORICAL_COLS = [
-    "employment_status", "location_type", "savings_goal",
-    "risk_tolerance", "investment_horizon",
+    "employment_status", "education", "location_type", "primary_ewallet",
+    "savings_goal", "risk_tolerance", "investment_horizon",
 ]
 
 VALID_CATEGORIES = {
     "employment_status": {"Employed", "Self-employed", "Freelancer", "Student", "Unemployed"},
+    "education": {"Elementary", "High School", "Vocational", "College", "Graduate"},
     "location_type": {"Metro Manila", "Urban", "Rural"},
+    "primary_ewallet": {"GCash", "Maya", "Both", "Neither"},
     "savings_goal": {"Emergency Fund", "Education", "Retirement", "Travel",
                      "Home/Property", "General Savings", "Business Capital"},
     "risk_tolerance": {"Conservative", "Moderate", "Aggressive"},
@@ -50,6 +53,7 @@ NUMERICAL_RANGES = {
     "digital_savviness": (1, 5),
     "has_bank_account": (0, 1),
     "has_ewallet": (0, 1),
+    "receives_remittance": (0, 1),
 }
 
 

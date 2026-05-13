@@ -100,6 +100,14 @@ RISK_TOLERANCES = ["Conservative", "Moderate", "Aggressive"]
 INVESTMENT_HORIZONS = ["Short-term", "Medium-term", "Long-term"]
 LOCATION_TYPES = ["Metro Manila", "Urban", "Rural"]
 
+# PSA LFS 2023 educational-attainment categories (collapsed into 5 ordered levels).
+EDUCATION_LEVELS = ["Elementary", "High School", "Vocational", "College", "Graduate"]
+
+# Primary e-wallet of the user: an observable platform-attachment signal used to
+# disambiguate near-identical digital savings products (e.g. maya_savings vs
+# gcash_gsave). "Neither" is the value when the user has no e-wallet at all.
+PRIMARY_EWALLETS = ["GCash", "Maya", "Both", "Neither"]
+
 
 # ============================================================================
 # DATA GENERATION FUNCTIONS
@@ -313,6 +321,99 @@ def generate_behavioral_features(df: pd.DataFrame) -> pd.DataFrame:
 
     df["has_ewallet"] = has_ewallet
 
+    # --- Primary e-wallet (conditional on has_ewallet, age, location) ---
+    # Market-share priors: GCash leads (~67M users) over Maya (~60M) but Maya is
+    # younger-skewed and growing in NCR. Source: BSP FIS 2021 + provider market
+    # disclosures. Users without an e-wallet receive "None"; "Both" represents
+    # multi-platform users common among Metro Manila digital natives.
+    primary_ewallet = np.empty(n, dtype=object)
+    for i in range(n):
+        if df.iloc[i]["has_ewallet"] == 0:
+            primary_ewallet[i] = "Neither"
+            continue
+
+        age = df.iloc[i]["age"]
+        loc = df.iloc[i]["location_type"]
+
+        # Base priors: GCash dominant, Maya growing, Both is the multi-platform tail.
+        if loc == "Metro Manila":
+            probs = [0.45, 0.30, 0.25]  # GCash, Maya, Both
+        elif loc == "Urban":
+            probs = [0.55, 0.25, 0.20]
+        else:
+            probs = [0.65, 0.20, 0.15]  # GCash dominates rural by adoption order
+
+        # Age skew: Maya skews younger; older users skew GCash-only.
+        if age < 30:
+            probs = [probs[0] - 0.05, probs[1] + 0.05, probs[2]]
+        elif age >= 50:
+            probs = [probs[0] + 0.10, probs[1] - 0.05, probs[2] - 0.05]
+
+        probs = np.clip(probs, 0.05, None)
+        probs = np.array(probs) / sum(probs)
+        primary_ewallet[i] = np.random.choice(["GCash", "Maya", "Both"], p=probs)
+
+    df["primary_ewallet"] = primary_ewallet
+
+    # --- Education (PSA LFS 2023 educational attainment) ---
+    # Distributions reflect PSA LFS 2023 published category shares for the 18-64
+    # working-age population, with conditional shifts by location (NCR is more
+    # college-educated than rural). Vocational is technical/TESDA-track.
+    education = np.empty(n, dtype=object)
+    edu_loc_probs = {
+        "Metro Manila": [0.05, 0.25, 0.10, 0.50, 0.10],
+        "Urban":        [0.10, 0.35, 0.12, 0.38, 0.05],
+        "Rural":        [0.20, 0.45, 0.15, 0.18, 0.02],
+    }
+    for i in range(n):
+        loc = df.iloc[i]["location_type"]
+        age = df.iloc[i]["age"]
+        emp = df.iloc[i]["employment_status"]
+        probs = list(edu_loc_probs[loc])
+
+        # Older cohorts in PSA data have lower college-completion rates.
+        if age >= 50:
+            probs[0] += 0.05
+            probs[1] += 0.05
+            probs[3] -= 0.05
+            probs[4] -= 0.05
+
+        # Employed and Freelancers skew slightly more educated than the base.
+        if emp in ("Employed", "Freelancer"):
+            probs[3] += 0.05
+            probs[4] += 0.02
+            probs[0] -= 0.04
+            probs[1] -= 0.03
+
+        probs = np.clip(probs, 0.01, None)
+        probs = np.array(probs) / sum(probs)
+        education[i] = np.random.choice(EDUCATION_LEVELS, p=probs)
+
+    df["education"] = education
+
+    # --- Receives remittance (PSA FIES 2023 OFW remittance recipient) ---
+    # PSA FIES 2023: roughly 20% of households nationally receive OFW
+    # remittances; receipt rates are higher in Region IV-A/CAR/Visayas
+    # provinces and lower in NCR proper. Modeled here as a binary indicator.
+    receives_remittance = np.zeros(n, dtype=int)
+    for i in range(n):
+        p = 0.20
+        loc = df.iloc[i]["location_type"]
+        if loc == "Metro Manila":
+            p -= 0.05  # NCR proper has lower direct receipt rate
+        elif loc == "Rural":
+            p += 0.10  # Rural provinces lead in remittance receipt
+
+        emp = df.iloc[i]["employment_status"]
+        if emp == "Unemployed":
+            p += 0.05  # remittance-supported, not employed
+        elif emp == "Employed":
+            p -= 0.03
+
+        receives_remittance[i] = int(np.random.random() < np.clip(p, 0.02, 0.50))
+
+    df["receives_remittance"] = receives_remittance
+
     # --- Savings goal (conditional on age & employment) ---
     savings_goal = np.empty(n, dtype=object)
     goal_probs_by_profile = {
@@ -405,12 +506,6 @@ def assign_product_recommendations(df: pd.DataFrame) -> pd.DataFrame:
     n = len(df)
     recommendations = np.empty(n, dtype=object)
 
-    # Platform preference: in reality people tend to favor one platform
-    # GCash ~67M users, Maya ~60M users, BPI ~10M digital (approx 2024-2025)
-    platform_pref = np.random.choice(
-        ["gcash", "maya", "bpi"], size=n, p=[0.40, 0.35, 0.25]
-    )
-
     for i in range(n):
         row = df.iloc[i]
         scores = {p: 0.0 for p in PRODUCTS}
@@ -427,13 +522,29 @@ def assign_product_recommendations(df: pd.DataFrame) -> pd.DataFrame:
         location = row["location_type"]
         deps = row["num_dependents"]
         expenses = row["monthly_expenses"]
-        pref = platform_pref[i]
+        ewallet = row["primary_ewallet"]
+        education = row["education"]
+        remittance = row["receives_remittance"]
 
-        # ── Platform Preference Bonus ───────────────────────────────
-        pref_bonus = 2
-        for p in PRODUCTS:
-            if p.startswith(pref):
-                scores[p] += pref_bonus
+        # ── Platform Attachment (observable, replaces hidden platform_pref) ─
+        # The user's primary e-wallet is the strongest single signal of which
+        # provider's products they will actually open. This is the
+        # discriminator that breaks the maya_savings vs gcash_gsave overlap.
+        if ewallet == "GCash":
+            scores["gcash_gsave"] += 3
+            scores["gcash_ginvest"] += 2
+        elif ewallet == "Maya":
+            scores["maya_savings"] += 3
+            scores["maya_personal_goals"] += 2
+            scores["maya_time_deposit"] += 1
+        elif ewallet == "Both":
+            scores["gcash_gsave"] += 1
+            scores["maya_savings"] += 1
+            scores["maya_personal_goals"] += 1
+        else:  # "Neither" — no e-wallet, falls back to BPI traditional banking
+            scores["bpi_savings"] += 2
+            scores["bpi_save_up"] += 1
+            scores["bpi_time_deposit"] += 1
 
         # ── Digital Preference ──────────────────────────────────────
         if digital >= 4 and has_ew:
@@ -576,6 +687,39 @@ def assign_product_recommendations(df: pd.DataFrame) -> pd.DataFrame:
             scores["bpi_time_deposit"] += 1
             scores["gcash_ginvest"] -= 1
 
+        # ── Education ──────────────────────────────────────────────
+        # Higher education predicts ability to engage with complex products
+        # (UITF, time deposits with explicit terms) and tolerance for risk.
+        # Source: Lusardi & Mitchell (2014) on financial literacy and
+        # planning; PSA LFS 2023 attainment-by-occupation tabulations.
+        if education in ("College", "Graduate"):
+            scores["gcash_ginvest"] += 2
+            scores["bpi_time_deposit"] += 1
+            scores["maya_time_deposit"] += 1
+        elif education == "Vocational":
+            scores["maya_personal_goals"] += 1
+            scores["bpi_save_up"] += 1
+        elif education == "High School":
+            scores["gcash_gsave"] += 1
+            scores["maya_savings"] += 1
+            scores["gcash_ginvest"] -= 1
+        else:  # Elementary
+            scores["gcash_gsave"] += 2
+            scores["maya_savings"] += 1
+            scores["gcash_ginvest"] -= 2
+            scores["bpi_time_deposit"] -= 1
+
+        # ── Remittance Receipt ─────────────────────────────────────
+        # PSA FIES 2023: remittance-recipient households have systematically
+        # higher household savings and are more likely to allocate to goal-
+        # based products (education, home, retirement) and time-locked
+        # vehicles to discipline irregular inflows.
+        if remittance == 1:
+            scores["maya_personal_goals"] += 2
+            scores["bpi_save_up"] += 2
+            scores["bpi_time_deposit"] += 1
+            scores["maya_time_deposit"] += 1
+
         # ── Select best product (with 8% noise for realism) ────────
         sorted_products = sorted(scores, key=scores.get, reverse=True)
         if np.random.random() < 0.08:
@@ -607,8 +751,9 @@ def generate_dataset(n: int = 5000, seed: int = 42) -> pd.DataFrame:
 
     column_order = [
         "age", "monthly_income", "monthly_expenses", "existing_savings",
-        "employment_status", "num_dependents", "location_type",
+        "employment_status", "education", "num_dependents", "location_type",
         "digital_savviness", "has_bank_account", "has_ewallet",
+        "primary_ewallet", "receives_remittance",
         "savings_goal", "risk_tolerance", "investment_horizon",
         "recommended_product",
     ]
@@ -644,19 +789,20 @@ def print_dataset_summary(df: pd.DataFrame):
     print(f"\n{'-'*40}")
     print("CATEGORICAL FEATURES")
     print(f"{'-'*40}")
-    cat_cols = ["employment_status", "location_type", "savings_goal",
-                "risk_tolerance", "investment_horizon"]
+    cat_cols = ["employment_status", "education", "location_type", "primary_ewallet",
+                "savings_goal", "risk_tolerance", "investment_horizon"]
     for col in cat_cols:
         print(f"\n  {col}:")
         for val, count in df[col].value_counts().items():
             print(f"    {val:20s} {count:5d} ({count/len(df)*100:5.1f}%)")
 
     print(f"\n{'-'*40}")
-    print("DIGITAL FEATURES")
+    print("DIGITAL & REMITTANCE FEATURES")
     print(f"{'-'*40}")
-    print(f"  Bank account ownership: {df['has_bank_account'].mean()*100:.1f}%")
-    print(f"  E-wallet ownership:     {df['has_ewallet'].mean()*100:.1f}%")
-    print(f"  Avg digital savviness:  {df['digital_savviness'].mean():.2f} / 5.00")
+    print(f"  Bank account ownership:    {df['has_bank_account'].mean()*100:.1f}%")
+    print(f"  E-wallet ownership:        {df['has_ewallet'].mean()*100:.1f}%")
+    print(f"  Avg digital savviness:     {df['digital_savviness'].mean():.2f} / 5.00")
+    print(f"  Receives OFW remittance:   {df['receives_remittance'].mean()*100:.1f}%")
 
     print(f"\n{'-'*40}")
     print("INCOME BY EMPLOYMENT STATUS (PHP/month)")

@@ -1,0 +1,186 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titling}
+
+\setlength{\droptitle}{-2.5em}
+
+\title{\Large FinXplain: Request for Expert Review of an Explainable AI Prototype \\[2pt]
+       \large for Philippine Fintech Savings-Product Recommendations}
+\author{Ashton Stephonie T. Matias \\
+        Bachelor of Science in Computer Science \\
+        University of the Philippines Los Ba\~{n}os \\
+        \texttt{atmatias@up.edu.ph}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\section*{Purpose of this brief}
+
+This document requests your expert review of \textbf{FinXplain}, an undergraduate
+research prototype that recommends Philippine savings and investment products
+to retail users together with a plain-language explanation for each
+recommendation. I am writing to ask whether the product--profile pairings the
+system produces are consistent with sound personal-finance practice as you
+would advise a Filipino client today. Your feedback will be cited in the final
+manuscript and acknowledged in the defense.
+
+The prototype is a \emph{research artifact} only. It is not deployed to the
+public, does not connect to any provider API, and is not intended to issue
+binding financial advice; the user-facing interface displays this disclaimer
+prominently.
+
+\section*{What the system does, in one paragraph}
+
+FinXplain takes 16 inputs from the user (age, monthly income, monthly
+expenses, existing savings, employment status, educational attainment, number
+of dependents, location type, digital savviness, bank-account ownership,
+e-wallet ownership, primary e-wallet, OFW remittance receipt, savings goal,
+risk tolerance, and investment horizon) and recommends one of eight savings
+or investment products from three providers (GCash, Maya, BPI). For every
+recommendation it returns: (i)~the predicted product and the top-3
+alternatives with probabilities, (ii)~a ranked top-5 list of factors that
+\emph{supported} or \emph{opposed} the recommendation, (iii)~plain-language
+sentences explaining each factor in everyday terms, and (iv)~up to three
+\emph{counterfactual} suggestions of the form ``if you increased your
+existing savings to PHP~50{,}000, BPI Plan Ahead Time Deposit would be
+recommended instead.''
+
+The recommendation engine is an Explainable Boosting Machine (EBM)---a
+glass-box model whose contributions per feature can be read off directly,
+without post-hoc approximation. An XGBoost benchmark is used only for
+offline performance comparison.
+
+\section*{Product catalogue under review}
+
+The eight products covered by the prototype are listed in
+Table~\ref{tab:products}. Interest rates and minimum balances are point-in-time
+values verified in April 2026 against the providers' official documentation.
+
+\begin{table}[h]
+    \centering
+    \small
+    \caption{Products covered by the FinXplain prototype.}
+    \label{tab:products}
+    \begin{tabular}{lllll}
+        \toprule
+        \textbf{Product} & \textbf{Provider} & \textbf{Type} & \textbf{Posted Rate} & \textbf{Min. Balance} \\
+        \midrule
+        GSave (CIMB)             & GCash & Digital savings        & 2.6\% p.a.          & PHP 0       \\
+        GInvest (UITFs)          & GCash & Investment (UITF)      & Market-linked       & PHP 50      \\
+        Maya Savings             & Maya  & Digital savings        & 3.0\% base, up to 15\% & PHP 0    \\
+        Maya Personal Goals      & Maya  & Goal-based savings     & 4--8\% tiered       & PHP 0       \\
+        Maya Time Deposit Plus   & Maya  & Digital time deposit   & 3.5--6.0\% p.a.     & PHP 5{,}000 \\
+        BPI Regular Savings      & BPI   & Traditional savings    & 0.0625\% p.a.       & PHP 3{,}000 \\
+        BPI \#SaveUp             & BPI   & Digital auto-save      & 0.0925\% p.a.       & PHP 1       \\
+        BPI Plan Ahead TD        & BPI   & 5-year time deposit    & Branch-quoted fixed & PHP 50{,}000\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section*{How the system decides}
+
+Because Philippine fintech transaction data is not publicly available, I
+generated a synthetic dataset of 5{,}000 profiles whose marginal and
+conditional distributions are parameterized from PSA FIES 2023, PSA LFS
+2023, the PSA 2020 Census, and the BSP 2021 Financial Inclusion Survey. I
+then assigned a product label to every profile through a hand-coded,
+multi-factor additive scoring system grounded in each product's official
+eligibility criteria and in established personal-finance principles. The
+EBM is trained on these (profile, product) pairs.
+
+A condensed version of the labeling rules is shown in
+Table~\ref{tab:rules}. Note that these rules are deliberately a coarse
+caricature of the suitability assessment a real advisor would perform; the
+specific question I am asking you is whether the resulting product--profile
+pairings are nonetheless defensible, and where you would push back.
+
+\begin{table}[h]
+    \centering
+    \footnotesize
+    \caption{Condensed rule logic for product assignment (R1--R10).}
+    \label{tab:rules}
+    \begin{tabular}{p{2.4cm}p{12cm}}
+        \toprule
+        \textbf{Product} & \textbf{Profile (informal)} \\
+        \midrule
+        GSave (GCash)            & Low existing savings ($<$PHP 5{,}000); digitally engaged; primary e-wallet GCash. \\
+        GInvest (GCash)          & Aggressive risk tolerance; long horizon; college-or-graduate education boosts further. \\
+        Maya Savings             & Low-to-moderate income; primary e-wallet Maya or Both; digitally engaged. \\
+        Maya Personal Goals      & Education / Home-Property / Travel goals; medium horizon; remittance recipient boosts. \\
+        Maya Time Deposit Plus   & Moderate income (PHP 30k--60k); medium horizon; non-aggressive risk; college-plus boosts. \\
+        BPI Regular Savings      & Has bank account; conservative; lower digital savviness; e-wallet ``Neither'' boosts. \\
+        BPI \#SaveUp             & Has bank account; digitally engaged; non-retirement goal; remittance-recipient boosts. \\
+        BPI Plan Ahead TD        & Existing savings $\geq$ PHP 50{,}000; conservative; long horizon; college-plus boosts. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\section*{What I am asking}
+
+The defense panel for this study recommended that I consult a practising
+financial advisor on the substantive content of the recommendations,
+separately from the machine-learning evaluation. Specifically, I would value
+your view on the following five questions:
+
+\begin{enumerate}
+    \item \textbf{Suitability.} Looking at the rule logic in
+    Table~\ref{tab:rules}, are these product-to-profile assignments
+    consistent with what you would actually advise a Filipino client in
+    each profile category? Where would you disagree?
+    \item \textbf{Missing factors.} What additional inputs (e.g.\
+    insurance coverage, outstanding debt, irregularity of income) do you
+    consider essential for a responsible savings or investment
+    recommendation, and which of these would you prioritize adding to a
+    next iteration?
+    \item \textbf{Counterfactual responsibility.} The system suggests
+    actionable changes such as ``increase your existing savings to PHP
+    X'' to unlock a different product. Are there counterfactual
+    suggestions that you consider inappropriate to surface to retail
+    users (e.g.\ those that imply unrealistic short-term income changes)?
+\end{enumerate}
+
+\section*{How your feedback will help}
+
+Even short, candid reactions would be enormously helpful---I am not looking
+for a formal report. \textbf{A few bullet points per question, or even a
+quick voice note, is more than enough}; please feel free to skip any
+question that doesn't apply to your practice, and if something else jumps
+out that I didn't think to ask, I would love to hear about that too.
+
+Whatever you share will go toward (i)~tightening the rule logic before
+final manuscript submission, (ii)~a short \emph{Expert Review} subsection
+in the Discussion chapter that summarizes your input and the changes I
+made in response (or, where I kept something as-is, why), and (iii)~the
+disclosure language shown to users on the prototype's results page. With
+your permission, I would be honoured to acknowledge you by name and
+affiliation in the final paper.
+
+If it is easier than typing, I am happy to walk you through the prototype
+live in a 20--30 minute call or visit at any time that fits your schedule.
+Otherwise, a reply by email---bullet points, voice notes, or even margin
+comments on this PDF---is perfect. There is no rigid deadline on my side;
+I will adapt to whatever pace works for you. Thank you so much for
+considering this---your time and expertise would genuinely shape the final
+version of this work.
+
+\vspace{1.5em}
+
+\noindent Sincerely,
+
+\vspace{2em}
+
+\noindent Ashton Stephonie T. Matias \\
+\noindent BS Computer Science, UP Los Ba\~{n}os
+
+\end{document}

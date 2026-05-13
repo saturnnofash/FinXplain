@@ -13,125 +13,139 @@
     "maya_time_deposit"
   ],
   "xgboost": {
-    "accuracy": 0.604,
-    "precision": 0.5786,
-    "recall": 0.604,
-    "f1": 0.5839,
-    "auc_roc": 0.8917
+    "accuracy": 0.815,
+    "precision": 0.8138,
+    "recall": 0.815,
+    "f1": 0.8118,
+    "auc_roc": 0.9671
   },
   "class_distribution": {
-    "bpi_save_up": 744,
-    "bpi_savings": 207,
-    "bpi_time_deposit": 389,
-    "gcash_ginvest": 626,
-    "gcash_gsave": 1397,
-    "maya_personal_goals": 783,
-    "maya_savings": 662,
-    "maya_time_deposit": 192
+    "bpi_save_up": 805,
+    "bpi_savings": 320,
+    "bpi_time_deposit": 392,
+    "gcash_ginvest": 562,
+    "gcash_gsave": 1737,
+    "maya_personal_goals": 639,
+    "maya_savings": 424,
+    "maya_time_deposit": 121
   },
   "train_class_counts": {
-    "bpi_save_up": 595,
-    "bpi_savings": 166,
-    "bpi_time_deposit": 311,
-    "gcash_ginvest": 501,
-    "gcash_gsave": 1118,
-    "maya_personal_goals": 626,
-    "maya_savings": 529,
-    "maya_time_deposit": 154
+    "bpi_save_up": 644,
+    "bpi_savings": 256,
+    "bpi_time_deposit": 314,
+    "gcash_ginvest": 450,
+    "gcash_gsave": 1389,
+    "maya_personal_goals": 511,
+    "maya_savings": 339,
+    "maya_time_deposit": 97
   },
   "test_class_counts": {
-    "bpi_save_up": 149,
-    "bpi_savings": 41,
+    "bpi_save_up": 161,
+    "bpi_savings": 64,
     "bpi_time_deposit": 78,
-    "gcash_ginvest": 125,
-    "gcash_gsave": 279,
-    "maya_personal_goals": 157,
-    "maya_savings": 133,
-    "maya_time_deposit": 38
+    "gcash_ginvest": 112,
+    "gcash_gsave": 348,
+    "maya_personal_goals": 128,
+    "maya_savings": 85,
+    "maya_time_deposit": 24
   },
   "confusion_matrix": [
     [
-      94,
-      3,
-      4,
-      4,
-      11,
-      27,
-      2,
-      4
-    ],
-    [
-      4,
-      22,
-      0,
-      0,
-      12,
-      0,
-      2,
-      1
-    ],
-    [
-      4,
-      2,
-      57,
+      124,
       6,
-      6,
-      2,
-      0,
-      1
-    ],
-    [
-      2,
-      0,
       4,
-      107,
+      4,
+      13,
       8,
-      1,
-      2,
-      1
-    ],
-    [
-      12,
-      3,
-      9,
-      1,
-      195,
-      18,
-      39,
+      0,
       2
     ],
     [
-      19,
+      9,
+      45,
+      3,
+      0,
+      6,
+      0,
       1,
+      0
+    ],
+    [
+      7,
       1,
-      10,
-      15,
-      105,
+      63,
+      0,
+      6,
+      1,
+      0,
+      0
+    ],
+    [
+      3,
+      1,
+      3,
+      79,
+      12,
+      11,
+      0,
+      3
+    ],
+    [
       5,
+      1,
+      1,
+      6,
+      328,
+      6,
+      1,
+      0
+    ],
+    [
+      6,
+      0,
+      1,
+      2,
+      16,
+      94,
+      7,
+      2
+    ],
+    [
+      1,
+      0,
+      0,
+      0,
+      6,
+      5,
+      72,
       1
     ],
     [
-      2,
+      4,
+      0,
+      0,
       1,
-      2,
-      5,
-      103,
-      1,
-      18,
-      1
-    ],
-    [
-      5,
-      2,
-      2,
-      14,
       4,
       4,
       1,
-      6
+      10
     ]
   ],
   "bank_account_rate": 0.488,
   "ewallet_rate": 0.604,
-  "avg_digital_savviness": 3.42
+  "avg_digital_savviness": 3.42,
+  "remittance_rate": 0.2336,
+  "education_dist": {
+    "High School": 0.3598,
+    "College": 0.3314,
+    "Elementary": 0.1294,
+    "Vocational": 0.126,
+    "Graduate": 0.0534
+  },
+  "primary_ewallet_dist": {
+    "Neither": 0.396,
+    "GCash": 0.3198,
+    "Maya": 0.1614,
+    "Both": 0.1228
+  }
 }

@@ -23,8 +23,8 @@ DATA_PATH = PROJECT_ROOT / "data" / "clean_data.csv"
 
 TARGET_COL = "recommended_product"
 CATEGORICAL_COLS = [
-    "employment_status", "location_type", "savings_goal",
-    "risk_tolerance", "investment_horizon",
+    "employment_status", "education", "location_type", "primary_ewallet",
+    "savings_goal", "risk_tolerance", "investment_horizon",
 ]
 
 print("Loading data from", DATA_PATH)
@@ -35,6 +35,7 @@ print(f"Columns ({len(df.columns)}):", list(df.columns))
 # Descriptive statistics
 num_cols_raw = ["age", "monthly_income", "monthly_expenses", "existing_savings",
                 "num_dependents", "digital_savviness", "has_bank_account", "has_ewallet",
+                "receives_remittance",
                 "disposable_income", "expense_ratio", "savings_to_income_ratio",
                 "income_per_dependent"]
 print("\n=== Descriptive Statistics ===")
@@ -148,6 +149,9 @@ results = {
     "bank_account_rate": round(df['has_bank_account'].mean(), 4),
     "ewallet_rate": round(df['has_ewallet'].mean(), 4),
     "avg_digital_savviness": round(df['digital_savviness'].mean(), 2),
+    "remittance_rate": round(df['receives_remittance'].mean(), 4),
+    "education_dist": {k: round(v, 4) for k, v in df['education'].value_counts(normalize=True).items()},
+    "primary_ewallet_dist": {k: round(v, 4) for k, v in df['primary_ewallet'].value_counts(normalize=True).items()},
 }
 
 out = PROJECT_ROOT / "notebooks" / "paper_results.json"

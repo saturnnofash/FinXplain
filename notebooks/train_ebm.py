@@ -37,8 +37,8 @@ MODELS_DIR.mkdir(exist_ok=True)
 TARGET_COL = "recommended_product"
 
 CATEGORICAL_COLS = [
-    "employment_status", "location_type", "savings_goal",
-    "risk_tolerance", "investment_horizon",
+    "employment_status", "education", "location_type", "primary_ewallet",
+    "savings_goal", "risk_tolerance", "investment_horizon",
 ]
 
 

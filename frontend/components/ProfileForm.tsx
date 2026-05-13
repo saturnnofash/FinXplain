@@ -28,14 +28,17 @@ import { useAppStore } from "@/store/useAppStore"
 interface FormData {
   age: string
   employment_status: string
+  education: string
   num_dependents: string
   location_type: string
   digital_savviness: number
   has_bank_account: number
   has_ewallet: number
+  primary_ewallet: string
   monthly_income: string
   monthly_expenses: string
   existing_savings: string
+  receives_remittance: number
   savings_goal: string
   risk_tolerance: string
   investment_horizon: string
@@ -44,14 +47,17 @@ interface FormData {
 const initialFormData: FormData = {
   age: "",
   employment_status: "",
+  education: "",
   num_dependents: "0",
   location_type: "",
   digital_savviness: 3,
   has_bank_account: 0,
   has_ewallet: 0,
+  primary_ewallet: "Neither",
   monthly_income: "",
   monthly_expenses: "",
   existing_savings: "",
+  receives_remittance: 0,
   savings_goal: "",
   risk_tolerance: "",
   investment_horizon: "",
@@ -219,14 +225,20 @@ export default function ProfileForm() {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1:
+      case 1: {
+        const ewalletOk =
+          formData.has_ewallet === 0 ||
+          ["GCash", "Maya", "Both"].includes(formData.primary_ewallet)
         return (
           formData.age !== "" &&
           Number(formData.age) >= 18 &&
           Number(formData.age) <= 65 &&
           formData.employment_status !== "" &&
-          formData.location_type !== ""
+          formData.education !== "" &&
+          formData.location_type !== "" &&
+          ewalletOk
         )
+      }
       case 2:
         return (
           formData.monthly_income !== "" &&
@@ -257,11 +269,15 @@ export default function ProfileForm() {
         monthly_expenses: Number(formData.monthly_expenses),
         existing_savings: Number(formData.existing_savings),
         employment_status: formData.employment_status,
+        education: formData.education,
         num_dependents: Number(formData.num_dependents),
         location_type: formData.location_type,
         digital_savviness: formData.digital_savviness,
         has_bank_account: formData.has_bank_account,
         has_ewallet: formData.has_ewallet,
+        primary_ewallet:
+          formData.has_ewallet === 0 ? "Neither" : formData.primary_ewallet,
+        receives_remittance: formData.receives_remittance,
         savings_goal: formData.savings_goal,
         risk_tolerance: formData.risk_tolerance,
         investment_horizon: formData.investment_horizon,
@@ -394,6 +410,33 @@ export default function ProfileForm() {
           </div>
 
           <div>
+            <FieldLabel tooltip="Your highest level of education completed. Used to gauge familiarity with more complex products.">
+              Educational attainment
+            </FieldLabel>
+            <Select
+              value={formData.education}
+              onValueChange={(v) => update("education", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select your highest level" />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  { value: "Elementary", label: "Elementary" },
+                  { value: "High School", label: "High School" },
+                  { value: "Vocational", label: "Vocational / TESDA" },
+                  { value: "College", label: "College" },
+                  { value: "Graduate", label: "Graduate (Masters / PhD)" },
+                ].map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <FieldLabel tooltip="People who rely on your income (children, elderly parents, etc.)">
               Number of dependents
             </FieldLabel>
@@ -477,10 +520,43 @@ export default function ProfileForm() {
               </Label>
               <ToggleSwitch
                 value={formData.has_ewallet}
-                onChange={(v) => update("has_ewallet", v)}
+                onChange={(v) => {
+                  update("has_ewallet", v)
+                  if (v === 0) update("primary_ewallet", "Neither")
+                }}
               />
             </div>
           </div>
+
+          {formData.has_ewallet === 1 && (
+            <div>
+              <FieldLabel tooltip="Which e-wallet do you use most often? This helps surface products from the platform you already trust.">
+                Primary e-wallet
+              </FieldLabel>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: "GCash", title: "GCash", sub: "Mainly GCash" },
+                  { value: "Maya", title: "Maya", sub: "Mainly Maya" },
+                  { value: "Both", title: "Both", sub: "Use both equally" },
+                ].map((opt) => (
+                  <div
+                    key={opt.value}
+                    onClick={() => update("primary_ewallet", opt.value)}
+                    className={`rounded-xl p-3 cursor-pointer transition-colors text-center ${
+                      formData.primary_ewallet === opt.value
+                        ? "border-2 border-primary bg-primary/5"
+                        : "border border-border hover:bg-accent"
+                    }`}
+                  >
+                    <div className="text-sm font-semibold">{opt.title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {opt.sub}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -510,6 +586,21 @@ export default function ProfileForm() {
             value={formData.existing_savings}
             onChange={(v) => update("existing_savings", v)}
           />
+
+          <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
+            <div>
+              <Label className="text-sm font-medium text-foreground">
+                Receives OFW remittance
+              </Label>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Do you regularly receive money from family abroad?
+              </div>
+            </div>
+            <ToggleSwitch
+              value={formData.receives_remittance}
+              onChange={(v) => update("receives_remittance", v)}
+            />
+          </div>
 
           {showSurplus && (
             <>

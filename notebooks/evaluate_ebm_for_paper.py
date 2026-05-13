@@ -17,13 +17,13 @@ warnings.filterwarnings("ignore")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "clean_data.csv"
-MODEL_PATH = PROJECT_ROOT / "backend" / "models" / "ebm_model.pkl"
-LE_PATH = PROJECT_ROOT / "backend" / "models" / "label_encoder.pkl"
+MODEL_PATH = PROJECT_ROOT / "models" / "ebm_model.pkl"
+LE_PATH = PROJECT_ROOT / "models" / "label_encoder.pkl"
 
 TARGET_COL = "recommended_product"
 CATEGORICAL_COLS = [
-    "employment_status", "location_type", "savings_goal",
-    "risk_tolerance", "investment_horizon",
+    "employment_status", "education", "location_type", "primary_ewallet",
+    "savings_goal", "risk_tolerance", "investment_horizon",
 ]
 
 df = pd.read_csv(DATA_PATH)
